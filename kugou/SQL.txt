@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS `music_list`(
+   `id` INT,
+   `type` INT ,
+   `title` VARCHAR(100) ,
+   `name` VARCHAR(100) ,
+   `image` VARCHAR(40) ,
+   `bg_time` date,
+    PRIMARY KEY ( `id` )
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `music_detail`(
+   `id` INT,
+   `sid` INT,
+   `type` INT ,
+   `name` VARCHAR(100) ,
+   `content` TEXT,
+   `bg_time` date,
+    PRIMARY KEY ( `id` )
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;

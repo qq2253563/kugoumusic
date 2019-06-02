@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import scrapy
 
-from kugou.items import KugouItem, MusicItem
+from kugou.items import *
 import re
 import json
-import time
+from datetime import datetime
 
 
 class MusicSpider(scrapy.Spider):
@@ -15,17 +15,19 @@ class MusicSpider(scrapy.Spider):
     def parse(self, response):
         images = response.xpath('//li/div[@class="pic"]/a/img/@_src').extract()
         titles = response.xpath('//li/div[@class="pic"]/a/@title').extract()
-        contents = response.xpath('//li/div[@class="detail"]/div[@class="text"]/text()').extract()
+        names = response.xpath('//li/div[@class="detail"]/div/em/text()').extract()
         urls = response.xpath('//li/div[@class="pic"]/a/@href').extract()
         ids = response.xpath('//ul[@id="ulAlbums"]/li/@class').extract()
-        for image, title, content, url, id in zip(images, titles, contents, urls, ids):
-            item = KugouItem()
+        for image, title, name, url, id in zip(images, titles, names, urls, ids):
+            item = KugouListItem()
             item['title'] = title
             item['image'] = image
-            item['content'] = content
+            item['name'] = name
             sid = int(id[2:])
             item['sid'] = sid
-            # scrapy.Request(url=url, meta={'id': sid}, callback=self.parse_detail)
+            item['type'] = 'kugou_list'
+            item['time'] = datetime.now().strftime("%Y-%m-%d")
+            yield scrapy.Request(url=url, meta={'id': sid}, callback=self.parse_detail)
             yield item
 
     def parse_detail(self, response):
@@ -39,15 +41,16 @@ class MusicSpider(scrapy.Spider):
             album_id = data['album_id']
             url = "https://wwwapi.kugou.com/yy/index.php?r=play/getdata&callback=jQ&hash=" + str(
                 hashvalue) + "&album_id=" + str(album_id) + "&dfid=&mid=2db3c8077a7647f44e4ed12003557285&platid=4&_="
-            music = MusicItem()
+            music = KugouMusicItem()
             music['sid'] = id
-            music['album_id'] = album_id
+            music['audio_id'] = data['audio_id']
             music['music_name'] = music_name
             yield scrapy.Request(url=url, meta={'music': music}, callback=self.parse_music)
 
     def parse_music(self, response):
         music = response.meta['music']
         re_json = response.text[3:-2]
+        music['type'] = 'kugou_music'
         music['music_data'] = re_json
-        music['time'] = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
+        music['time'] = datetime.now().strftime("%Y-%m-%d")
         yield music

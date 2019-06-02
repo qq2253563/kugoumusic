@@ -3,24 +3,25 @@
 # Define here the models for your scraped items
 #
 # See documentation in:
-# https://doc.scrapy.org/en/latest/topics/items.html
+# https://doc.org/en/latest/topics/items.html
 
-import scrapy
-
-
-class KugouItem(scrapy.Item):
-    sid = scrapy.Field()
-    name = scrapy.Field()
-    title = scrapy.Field()
-    image = scrapy.Field()
-    content = scrapy.Field()
-    __class__ = 'kugou.items.KugouItem'
+from scrapy import Item, Field
 
 
-class MusicItem(scrapy.Item):
-    album_id = scrapy.Field()
-    music_name = scrapy.Field()
-    sid = scrapy.Field()
-    music_data = scrapy.Field()
-    time = scrapy.Field()
-    __class__ = 'kugou.items.MusicItem'
+class KugouListItem(Item):
+    type = Field()
+    sid = Field()
+    name = Field()
+    title = Field()
+    image = Field()
+    content = Field()
+    time = Field()
+
+
+class KugouMusicItem(Item):
+    type = Field()
+    audio_id = Field()
+    music_name = Field()
+    sid = Field()
+    music_data = Field()
+    time = Field()

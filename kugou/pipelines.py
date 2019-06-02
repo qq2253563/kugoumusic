@@ -4,7 +4,6 @@
 #
 # Don't forget to add your pipeline to the ITEM_PIPELINES setting
 # See: https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-from items import KugouItem, MusicItem
 import pymysql
 
 
@@ -38,48 +37,42 @@ class KugouPipeline(object):
         self.cursor = self.connect.cursor()
 
     def process_item(self, item, spider):
-        if issubclass(item, KugouItem):
-            self.cursor.execute("""select * from kugou where kg_id = %d""", item["sid"])
+        typeclass = item['type']
+        if typeclass == 'kugou_list':
+            self.cursor.execute("""select * from music_list where id = %s""", item["sid"])
             ret = self.cursor.fetchone()
             if ret:
                 self.cursor.execute(
-                    """update kugou set title = %s, image=%s, content=%s where kg_id=%d """,  # 纯属python操作mysql知识，不熟悉请恶补
-                    (item['title'],
-                     item['image'],
-                     item['content'],
-                     item['sid']))  # item里面定义的字段和表字段对应
+                    """update music_list set title = %s, image=%s, name=%s, bg_time=%s, type=1 where id=%s """,
+                    (item['title'], item['image'], item['name'], item['time'], item['sid']))
             else:
                 self.cursor.execute(
-                    """insert into kugou(title, image, content ,kg_id)
-                    value (%s, %s, %s, %d)""",  # 纯属python操作mysql知识，不熟悉请恶补
-                    (item['title'],
-                     item['image'],
-                     item['content'],
-                     item['sid']))  # item里面定义的字段和表字段对应
+                    """insert into music_list (title, image, name, id, bg_time, type) value (%s, %s, %s, %s, %s, 1)""",
+                    (item['title'], item['image'], item['name'], item['sid'], item['time']))  # item里面定义的字段和表字段对应
             # 提交sql语句
             self.connect.commit()
             return item
-        elif item.__class__ == MusicItem:
-            self.cursor.execute("""select * from kugou where kg_id = %d""", item["album_id"])
+        elif typeclass == 'kugou_music':
+            self.cursor.execute("""select * from music_detail where id = %s""", item["audio_id"])
             ret = self.cursor.fetchone()
             if ret:
                 self.cursor.execute(
-                    """update kugou set name=%s, content=%s, time=%s,search_id=%d, where kg_id=%d """,
+                    """update music_detail set name=%s, content=%s, bg_time=%s, sid=%s, type = 1 where id=%s """,
                     # 纯属python操作mysql知识，不熟悉请恶补
                     (item['music_name'],
                      item['music_data'],
                      item['time'],
                      item['sid'],
-                     item['album_id']))  # item里面定义的字段和表字段对应
+                     item['audio_id']))  # item里面定义的字段和表字段对应
             else:
                 self.cursor.execute(
-                    """insert into kugou(name, content, time, search_id, kg_id)
-                    value (%s, %s, %s, %d, %d)""",  # 纯属python操作mysql知识，不熟悉请恶补
+                    """insert into music_detail(name, content, bg_time, sid, id, type)
+                    value (%s, %s, %s, %s, %s, 1)""",  # 纯属python操作mysql知识，不熟悉请恶补
                     (item['music_name'],
                      item['music_data'],
                      item['time'],
                      item['sid'],
-                     item['album_id']))  # item里面定义的字段和表字段对应
+                     item['audio_id']))  # item里面定义的字段和表字段对应
             # 提交sql语句
             self.connect.commit()
             return item
