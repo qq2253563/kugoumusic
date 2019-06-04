@@ -5,7 +5,7 @@ from kugou.items import *
 import re
 import json
 from datetime import datetime
-
+from scrapy.utils.project import get_project_settings
 
 class MusicSpider(scrapy.Spider):
     name = 'music'
@@ -36,11 +36,12 @@ class MusicSpider(scrapy.Spider):
         js_code = response.xpath("//script/text()").extract_first()
         js_re = "[" + re.search(r'\[(.+)\]', js_code).group(1) + "]"
         datas = json.loads(js_re)
+        settings = get_project_settings()
         for data, music_name in zip(datas, music_names):
             hashvalue = data['HASH']
             album_id = data['album_id']
             url = "https://wwwapi.kugou.com/yy/index.php?r=play/getdata&callback=jQ&hash=" + str(
-                hashvalue) + "&album_id=" + str(album_id) + "&dfid=&mid=2db3c8077a7647f44e4ed12003557285&platid=4&_="
+                hashvalue) + "&album_id=" + str(album_id) + "&dfid=&mid="+settings.get('KUGOU_MID')+"&platid=4&_="
             music = KugouMusicItem()
             music['sid'] = id
             music['audio_id'] = data['audio_id']
