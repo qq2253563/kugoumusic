@@ -69,6 +69,7 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 4
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
    'kugou.pipelines.KugouPipeline': 300,
+   'kugou.pipelines.IndexPipeline': 200,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)

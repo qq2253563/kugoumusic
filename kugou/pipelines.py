@@ -7,7 +7,7 @@
 import pymysql
 
 
-class KugouPipeline(object):
+class BasePipeline(object):
     table_name = 'kugou'
 
     def __init__(self, mysql_uri, mysql_db, mysql_user, mysql_password):
@@ -35,6 +35,12 @@ class KugouPipeline(object):
             charset='utf8',
         )
         self.cursor = self.connect.cursor()
+
+    def close_spider(self, spider):
+        self.connect.close()
+
+
+class KugouPipeline(BasePipeline):
 
     def process_item(self, item, spider):
         typeclass = item['type']
@@ -79,5 +85,14 @@ class KugouPipeline(object):
         else:
             return item
 
-    def close_spider(self, spider):
-        self.connect.close()
+
+class IndexPipeline(BasePipeline):
+    def process_item(self, item, spider):
+        typeclass = item['type']
+        if typeclass == 'kugou_banner':
+            self.cursor.execute(
+                """insert into music_banner (id, image, bg_time, url, type) value (%s, %s, %s, %s, 1)""",
+                (item['banner_id'], item['image'], item['url'], item['time']))  # item里面定义的字段和表字段对应
+            # 提交sql语句
+            self.connect.commit()
+        return item

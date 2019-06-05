@@ -6,7 +6,7 @@ from scrapy import cmdline
 
 def perform_task():
     scheduler.enter(60*60*24, 0, perform_task)
-    cmdline.execute('scrapy crawl music'.split())
+    cmdline.execute('scrapy crawl musiclist'.split())
 
 
 if __name__ == '__main__':

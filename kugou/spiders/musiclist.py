@@ -4,11 +4,13 @@ import scrapy
 from kugou.items import *
 import re
 import json
-from datetime import datetime
 from scrapy.utils.project import get_project_settings
+from utils.filter import filter_response
+from datetime import datetime
 
-class MusicSpider(scrapy.Spider):
-    name = 'music'
+
+class MusicListSpider(scrapy.Spider):
+    name = 'musiclist'
     allowed_domains = ['kugou.com']
     start_urls = ['https://www.kugou.com/yy/html/special.html']
 
@@ -41,7 +43,7 @@ class MusicSpider(scrapy.Spider):
             hashvalue = data['HASH']
             album_id = data['album_id']
             url = "https://wwwapi.kugou.com/yy/index.php?r=play/getdata&callback=jQ&hash=" + str(
-                hashvalue) + "&album_id=" + str(album_id) + "&dfid=&mid="+settings.get('KUGOU_MID')+"&platid=4&_="
+                hashvalue) + "&album_id=" + str(album_id) + "&dfid=&mid=" + settings.get('KUGOU_MID') + "&platid=4&_="
             music = KugouMusicItem()
             music['sid'] = id
             music['audio_id'] = data['audio_id']
@@ -49,9 +51,4 @@ class MusicSpider(scrapy.Spider):
             yield scrapy.Request(url=url, meta={'music': music}, callback=self.parse_music)
 
     def parse_music(self, response):
-        music = response.meta['music']
-        re_json = response.text[3:-2]
-        music['type'] = 'kugou_music'
-        music['music_data'] = re_json
-        music['time'] = datetime.now().strftime("%Y-%m-%d")
-        yield music
+        yield filter_response(response)

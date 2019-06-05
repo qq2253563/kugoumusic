@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `music_list`(
    `type` INT ,
    `title` VARCHAR(100) ,
    `name` VARCHAR(100) ,
-   `image` VARCHAR(40) ,
+   `image` VARCHAR(500) ,
    `bg_time` date,
     PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -17,3 +17,13 @@ CREATE TABLE IF NOT EXISTS `music_detail`(
    `bg_time` date,
     PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE IF NOT EXISTS `music_banner`(
+   `id` INT,
+   `type` INT ,
+   `image` VARCHAR(500) ,
+   `url` VARCHAR(500) ,
+   `bg_time` date,
+    PRIMARY KEY ( `id` )
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
+

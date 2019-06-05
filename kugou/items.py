@@ -25,3 +25,11 @@ class KugouMusicItem(Item):
     sid = Field()
     music_data = Field()
     time = Field()
+
+
+class BannerItem(Item):
+    banner_id = Field()
+    type = Field()
+    image = Field()
+    time = Field()
+    url = Field()
