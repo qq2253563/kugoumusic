@@ -92,7 +92,11 @@ class IndexPipeline(BasePipeline):
         if typeclass == 'kugou_banner':
             self.cursor.execute(
                 """insert into music_banner (id, image, bg_time, url, type) value (%s, %s, %s, %s, 1)""",
-                (item['banner_id'], item['image'], item['url'], item['time']))  # item里面定义的字段和表字段对应
-            # 提交sql语句
-            self.connect.commit()
+                (item['banner_id'], item['image'], item['time'], item['url']))  # item里面定义的字段和表字段对应
+        elif typeclass == 'kugou_single':
+            self.cursor.execute(
+                """insert into music_single 
+                (id, image, bg_time, name, introduction, type) value (%s, %s, %s, %s, %s, 1)""",
+                (item['single_id'], item['image'], item['time'], item['name'], item['introduction']))  # item
+        self.connect.commit()
         return item

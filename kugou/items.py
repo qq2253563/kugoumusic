@@ -33,3 +33,12 @@ class BannerItem(Item):
     image = Field()
     time = Field()
     url = Field()
+
+
+class SingleItem(Item):
+    single_id = Field()
+    type = Field()
+    image = Field()
+    name = Field()
+    time = Field()
+    introduction = Field()

@@ -23,7 +23,7 @@ class MusicListSpider(scrapy.Spider):
         for image, title, name, url, id in zip(images, titles, names, urls, ids):
             item = KugouListItem()
             item['title'] = title
-            item['image'] = image
+            item['image'] = image.replace("/240/", "/480/")
             item['name'] = name
             sid = int(id[2:])
             item['sid'] = sid

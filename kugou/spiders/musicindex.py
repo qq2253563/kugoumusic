@@ -1,14 +1,15 @@
 # -*- coding: utf-8 -*-
 import scrapy
-from items import BannerItem, KugouMusicItem
+from items import BannerItem, KugouMusicItem, SingleItem
 from datetime import datetime
 import random
 from scrapy.utils.project import get_project_settings
+import re
 from utils.filter import filter_response
+import json
 
 
-class MusicBannerSpider(scrapy.Spider):
-
+class MusicIndexSpider(scrapy.Spider):
     name = 'musicbanner'
     allowed_domains = ['kugou.com']
     start_urls = ['https://www.kugou.com/']
@@ -16,6 +17,9 @@ class MusicBannerSpider(scrapy.Spider):
     def parse(self, response):
         images = response.xpath('//div[@class="banner"]/ul/li/@data-bg').extract()
         urls = response.xpath('//div[@class="banner"]/ul/li/a/@href').extract()
+        single_images = response.xpath('//li/div/a[@class="singerLink"]/img/@_src').extract()
+        single_urls = response.xpath('//li/div/a[@class="singerLink"]/@href').extract()
+        single_names = response.xpath('//li/div/a[@class="singerLink"]/div/p/text()').extract()
         rid = random.randint(1, 100)
         for image, url in zip(images, urls):
             bannerItem = BannerItem()
@@ -31,6 +35,15 @@ class MusicBannerSpider(scrapy.Spider):
                 bannerItem['url'] = ''
                 yield scrapy.Request(url=url, meta={"id": int(id)}, callback=self.parse_detail)
             yield bannerItem
+
+        for single_url, single_image, single_name in zip(single_urls, single_images, single_names):
+            singleItem = SingleItem()
+            singleItem['single_id'] = int(single_url.split(".")[2][-4:])
+            singleItem['image'] = single_image.replace("/240/", "/480/")
+            singleItem['name'] = single_name
+            singleItem['type'] = 'kugou_single'
+            singleItem['time'] = datetime.now().strftime("%Y-%m-%d")
+            yield scrapy.Request(url=single_url, meta={"singleItem": singleItem}, callback=self.parse_singledetail)
 
     def parse_detail(self, response):
         id = response.meta['id']
@@ -52,3 +65,22 @@ class MusicBannerSpider(scrapy.Spider):
     def parse_music(self, response):
         yield filter_response(response)
 
+    def parse_singledetail(self, response):
+        singleItem = response.meta['singleItem']
+        introduction = response.xpath('//div[@class="intro"]/p/text()').extract()[0]
+        singleItem['introduction'] = introduction
+        js_code = response.xpath("//script/text()").extract_first()
+        js_re = "[" + re.search(r'\[(.+)\]', js_code).group(1) + "]"
+        datas = json.loads(js_re)
+        settings = get_project_settings()
+        for data in datas:
+            hashvalue = data['hash']
+            album_id = data['album_id']
+            url = "https://wwwapi.kugou.com/yy/index.php?r=play/getdata&callback=jQ&hash=" + str(
+                hashvalue) + "&dfid=&mid=" + settings.get('KUGOU_MID') + "&platid=4&_="
+            music = KugouMusicItem()
+            music['sid'] = singleItem['single_id']
+            music['audio_id'] = album_id
+            music['music_name'] = data['audio_name']
+            yield scrapy.Request(url=url, meta={'music': music}, callback=self.parse_music)
+        yield singleItem

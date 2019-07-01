@@ -27,3 +27,11 @@ CREATE TABLE IF NOT EXISTS `music_banner`(
     PRIMARY KEY ( `id` )
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE IF NOT EXISTS `music_single`(
+   `id` INT,
+   `type` INT ,
+   `image` VARCHAR(500) ,
+   `name` VARCHAR(100) ,
+   `bg_time` date,
+    PRIMARY KEY ( `id` )
+)ENGINE=InnoDB DEFAULT CHARSET=utf8;
